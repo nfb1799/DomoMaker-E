@@ -21,7 +21,14 @@ const DomoSchema = new mongoose.Schema({
   age: {
     type: Number,
     min: 0,
-    require: true,
+    required: true,
+  },
+
+  // New to DomoMaker E
+  level: {
+    type: Number,
+    min: 0,
+    required: true,
   },
 
   owner: {
@@ -38,7 +45,8 @@ const DomoSchema = new mongoose.Schema({
 
 DomoSchema.static.toAPI = (doc) => ({
   name: doc.name,
-  age: doc.agem,
+  age: doc.age,
+  level: doc.level,
 });
 
 DomoSchema.statics.findByOwner = (ownerId, callback) => {
@@ -46,7 +54,19 @@ DomoSchema.statics.findByOwner = (ownerId, callback) => {
     owner: convertId(ownerId),
   };
 
-  return DomoModel.find(search).select('name age').lean().exec(callback);
+  // Select level as well in DomoMaker E
+  return DomoModel.find(search).select('name age level').lean().exec(callback);
+};
+
+// New to DomoMaker E 
+// Searches the model by owner and name and deletes the first instance found
+DomoSchema.statics.deleteDomo = (ownerId, name, callback) => {
+  const search = {
+    owner: convertId(ownerId),
+    name,
+  };
+
+  return DomoModel.deleteOne(search, callback);
 };
 
 DomoModel = mongoose.model('Domo', DomoSchema);
